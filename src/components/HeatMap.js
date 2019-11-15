@@ -1,13 +1,14 @@
 import React, {Component} from 'react';
 import * as d3 from "d3";
+import data from '../data/finaldata.csv';
 
 export default class HeatMap extends Component {
     componentDidMount() {
-        var margin = {top: 30, right: 30, bottom: 30, left: 30},
-            width = 450 - margin.left - margin.right,
-            height = 450 - margin.top - margin.bottom;
+        let margin = {top: 60, right: 30, bottom: 30, left: 300},
+            width = 550 - margin.left - margin.right,
+            height = 600 - margin.top - margin.bottom;
 
-        var svg = d3.select("#heatmap")
+        let svg = d3.select("#heatmap")
             .append("svg")
             .attr("width", width + margin.left + margin.right)
             .attr("height", height + margin.top + margin.bottom)
@@ -15,41 +16,81 @@ export default class HeatMap extends Component {
             .attr("transform",
                 "translate(" + margin.left + "," + margin.top + ")");
 
-        var myGroups = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J"]
-        var myVars = ["v1", "v2", "v3", "v4", "v5", "v6", "v7", "v8", "v9", "v10"]
+        d3.csv(data).then( function(data){
+            let x_domain = ["academics","athletics","student_life","campus","party","location", "food", "safety"]
+            let y_domain = []
+            let z_domain = ["A+","A","A-","B+","B","B-","C+","C","C-","D+","D","D-"]
+            let color = ["#F4F4F4","#F9D9DF","#F9CFD7","#F7B2BF","#F49FAE","#F28EA1","#F77990","#EF627C","#F25773","#F25773","#ED3D5D","#FC0532"]
+            let all_data = data.slice(1,20)
+            let campus_life = []
+            all_data.forEach(function(d) {
+                for(let i = 0; i < x_domain.length; i++) {
+                    let temp = {}, category = x_domain[i]
+                    temp.name = d.name;
+                    temp.category = category;
+                    temp.score = d[category];
+                    campus_life.push(temp)
+                }
+                y_domain.push(d.name)
+            })
 
-        var x = d3.scaleBand()
-            .range([ 0, width ])
-            .domain(myGroups)
-            .padding(0.01);
-        svg.append("g")
-            .attr("transform", "translate(0," + height + ")")
-            .call(d3.axisBottom(x))
 
-        var y = d3.scaleBand()
-            .range([ height, 0 ])
-            .domain(myVars)
-            .padding(0.01);
-        svg.append("g")
-            .call(d3.axisLeft(y));
+            let x = d3.scaleBand()
+                .range([ 0, width ])
+                .domain(x_domain)
+                .padding(0.01);
+            svg.append("g")
+                .attr("transform", "translate(0, 0)")
+                .call(d3.axisTop(x))
+                .selectAll("text")
+                .style("text-anchor", "start")
+                .attr("dx", "0.8em")
+                .attr("dy", ".15em")
+                .attr("transform", function(d) {
+                    return "rotate(-65)"
+                });
 
-        var myColor = d3.scaleLinear()
-            .range(["white", "#69b3a2"])
-            .domain([1,100])
 
-        d3.csv("https://raw.githubusercontent.com/holtzy/D3-graph-gallery/master/DATA/heatmap_data.csv").then(function(data) {
+            let y = d3.scaleBand()
+                .range([ height, 0 ])
+                .domain(y_domain)
+                .padding(0.01);
+            svg.append("g")
+                .call(d3.axisLeft(y));
+
+            let heatmap_color = d3.scaleOrdinal()
+                .range(color.reverse())
+                .domain(z_domain)
 
             svg.selectAll()
-                .data(data, function(d) {return d.group+':'+d.variable;})
+                .data(campus_life)
                 .enter()
                 .append("circle")
-                .attr("cx", function(d) { return x(d.group)+20})
-                .attr("cy", function(d) { return y(d.variable)+20 })
-                .attr("r",18)
+                .attr("cx", function(d) { return x(d.category)+15})
+                .attr("cy", function(d) { return y(d.name)+14 })
+                .attr("r",13)
                 .attr("width", x.bandwidth() )
                 .attr("height", y.bandwidth() )
-                .style("fill", function(d) { return myColor(d.value)} )
+                .style("fill", function(d) { return heatmap_color(d.score)} )
+
+            svg.selectAll()
+                .data(campus_life)
+                .enter()
+                .append("text")
+                .text(function(d) {return d.score})
+                .attr("x", function(d) { return x(d.category)+8})
+                .attr("y", function(d) { return y(d.name)+18 })
+                .style("opacity", 1)
+                .style("cursor", "default")
+                // .on('mouseover', function(d){
+                //     d3.select(this).style("opacity",1);
+                // })
+                // .on('mouseout',function(d) {
+                //     d3.select(this).style("opacity",0);
+                // })
+
         });
+
     }
     render() {
         return <svg id='heatmap' width="960" height="600"></svg>
