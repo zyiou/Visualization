@@ -1,6 +1,9 @@
 import React, {Component} from 'react';
 import * as d3 from "d3";
 import data from '../data/finaldata.csv';
+import {selected_states} from './StateMap';
+
+export var all_data = [];
 
 export default class HeatMap extends Component {
     componentDidMount() {
@@ -21,7 +24,7 @@ export default class HeatMap extends Component {
             let y_domain = []
             let z_domain = ["A+","A","A-","B+","B","B-","C+","C","C-","D+","D","D-"]
             let color = ["#F4F4F4","#F9D9DF","#F9CFD7","#F7B2BF","#F49FAE","#F28EA1","#F77990","#EF627C","#F25773","#F25773","#ED3D5D","#FC0532"]
-            let all_data = data.slice(1,20)
+            all_data = data.slice(1,20)
             let campus_life = []
             all_data.forEach(function(d) {
                 for(let i = 0; i < x_domain.length; i++) {
@@ -92,6 +95,7 @@ export default class HeatMap extends Component {
         });
 
     }
+    
     render() {
         return <svg id='heatmap' width="960" height="600"></svg>
     }
