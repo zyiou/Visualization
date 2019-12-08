@@ -4,9 +4,9 @@ import data from '../data/finaldata.csv';
 
 export default class Coordinate extends Component {
     componentDidMount() {
-        let margin = {top: 30, right: 10, bottom: 10, left: 200},
-            width = 600 - margin.left - margin.right,
-            height = 500 - margin.top - margin.bottom;
+        let margin = {top: 60, right: 10, bottom: 30, left: 200},
+            width = 960 - margin.left - margin.right,
+            height = 600 - margin.top - margin.bottom;
 
         let x = {},
             y = {},
@@ -17,13 +17,13 @@ export default class Coordinate extends Component {
             background,
             foreground;
 
-        let svg = d3.select("#coordinate").append("svg")
+        let svg = d3.select("#coordinate")
             .attr("width", width + margin.left + margin.right)
             .attr("height", height + margin.top + margin.bottom)
             .append("g")
             .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
         let dimensions = []
-        x = d3.scaleBand().domain(dimensions).range([0,width])
+        x = d3.scaleBand().domain(dimensions).range([0, width])
         d3.csv(data).then(all_data => {
             all_data = all_data.slice(1, 20);
 
@@ -33,7 +33,7 @@ export default class Coordinate extends Component {
             // Extract the list of dimensions and create a scale for each.
             dimensions = d3.keys(data[0]).filter(function (d) {
                 if (d == "name")
-                    return y[d] = d3.scaleBand().domain(data.map(d=>d.name)).range([0, height]);
+                    return y[d] = d3.scaleBand().domain(data.map(d => d.name)).range([0, height]);
                 else return (y[d] = d3.scaleLinear()
                     .domain(d3.extent(data, function (p) {
                         return +p[d];
@@ -66,36 +66,36 @@ export default class Coordinate extends Component {
                 .attr("transform", function (d) {
                     return "translate(" + x(d) + ")";
                 })
-            .call(d3.drag()
-                .subject(function (d) {
-                    return {x: x(d)};
-                })
-                .on("start", function (d) {
-                    dragging[d] = x(d);
-                    background.attr("visibility", "hidden");
-                })
-                .on("drag", function (d) {
-                    dragging[d] = Math.min(width, Math.max(0, d3.event.x));
-                    foreground.attr("d", path);
-                    dimensions.sort(function (a, b) {
-                        return position(a) - position(b);
-                    });
-                    x.domain(dimensions);
-                    g.attr("transform", function (d) {
-                        return "translate(" + position(d) + ")";
+                .call(d3.drag()
+                    .subject(function (d) {
+                        return {x: x(d)};
                     })
-                })
-                .on("end", function (d) {
-                    delete dragging[d];
-                    transition(d3.select(this)).attr("transform", "translate(" + x(d) + ")");
-                    transition(foreground).attr("d", path);
-                    background
-                        .attr("d", path)
-                        .transition()
-                        .delay(500)
-                        .duration(0)
-                        .attr("visibility", null);
-                }));
+                    .on("start", function (d) {
+                        dragging[d] = x(d);
+                        background.attr("visibility", "hidden");
+                    })
+                    .on("drag", function (d) {
+                        dragging[d] = Math.min(width, Math.max(0, d3.event.x));
+                        foreground.attr("d", path);
+                        dimensions.sort(function (a, b) {
+                            return position(a) - position(b);
+                        });
+                        x.domain(dimensions);
+                        g.attr("transform", function (d) {
+                            return "translate(" + position(d) + ")";
+                        })
+                    })
+                    .on("end", function (d) {
+                        delete dragging[d];
+                        transition(d3.select(this)).attr("transform", "translate(" + x(d) + ")");
+                        transition(foreground).attr("d", path);
+                        background
+                            .attr("d", path)
+                            .transition()
+                            .delay(500)
+                            .duration(0)
+                            .attr("visibility", null);
+                    }));
 
             // Add an axis and title.
             g.append("g")
@@ -149,17 +149,17 @@ export default class Coordinate extends Component {
             const actives = [];
             // filter brushed extents
             svg.selectAll('.brush')
-                .filter(function(d) {
+                .filter(function (d) {
                     return d3.brushSelection(this);
                 })
-                .each(function(d) {
+                .each(function (d) {
                     actives.push({
                         dimension: d,
                         extent: d3.brushSelection(this)
                     });
                 });
             foreground.style("display", function (d) {
-                return actives.every(function(active) {
+                return actives.every(function (active) {
                     const dim = active.dimension;
                     if (active.extent[0][0] === active.extent[1][0] && active.extent[0][1] === active.extent[1][1]) return true;
                     return active.extent[0][1] <= y[dim](d[dim]) && y[dim](d[dim]) <= active.extent[1][1];
@@ -170,6 +170,14 @@ export default class Coordinate extends Component {
     }
 
     render() {
-        return <svg id='coordinate' width="600" height="600"></svg>
+        return (
+            <div>
+                <svg id='coordinate' width="960" height="600">
+                    <svg id='heatmap' width="0" height="600"></svg>
+                    <svg id='admission' width="0" height="600"></svg>
+                    <svg id='student' width="0" height="600"></svg>
+                </svg>
+            </div>
+        );
     }
 }
