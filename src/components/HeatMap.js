@@ -1,7 +1,6 @@
 import React, {Component} from 'react';
 import * as d3 from "d3";
 import data from '../data/finaldata.csv';
-import {selected_states} from './StateMap';
 
 export var all_data = [];
 
