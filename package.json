@@ -7,7 +7,7 @@
     "react": "^16.11.0",
     "react-awesome-button": "^6.3.1",
     "react-dom": "^16.11.0",
-    "react-scripts": "3.2.0",
+    "react-scripts": "5.0.1",
     "topojson-client": "^3.1.0"
   },
   "scripts": {
